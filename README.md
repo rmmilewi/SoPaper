@@ -59,6 +59,56 @@ All downloaded paper will be __compressed__ using `ps2pdf` from poppler-utils, i
    -Note: if you need to run server on debian/ubuntu, make sure you do *not* have 'python2-bson' package installed.
 	 -->
 
+## Reed's Additions
+
+I added an API for calling SoPaper from another Python script in a way that exactly mirrors the command-line version. This allows you to automate the searching of papers (such as when traversing a CSV result file from Harzing's Publish or Perish). An example of how this can be done is provided below:
+
+```python
+import csv,sopaper.__main__
+
+if __name__ == '__main__':
+    with open('harzingsPublishOrPerishResults.csv') as inputCSVFile,open("downloadedPaperManifest.csv",'w') as outputCSVFile:
+        reader = csv.DictReader(inputCSVFile,delimiter=';')
+        fieldnames = ['ArticleURL', 'Title','Downloaded Via Link','Downloaded Via Title','Download Successful','Downloaded File Name']
+        writer = csv.DictWriter(outputCSVFile,delimiter=';',fieldnames=fieldnames)
+        writer.writeheader()
+        for row in reader:
+            if "ArticleURL" in row:
+                linkToPaper = row["ArticleURL"]
+            else:
+                linkToPaper = None
+                print("Link Missing:",row)
+            if "Title" in row:
+                titleOfPaper = row["Title"]
+            else:
+                titleOfPaper = None
+                print("Title Missing:",row)
+            
+            #Try downloading the paper with the URL (if available)
+            if linkToPaper is not None:
+                downloadedPaperViaLink,downloadedFileName = sopaper.__main__.callAPIInterface(title=linkToPaper)
+            else:
+                downloadedPaperViaLink,downloadedFileName = False,None
+            
+            #If the URL doesn't work, try downloading the paper by searching for the title (if available)
+            if not downloadedPaperViaLink and titleOfPaper is not None:
+                downloadedPaperViaTitle,downloadedFileName = sopaper.__main__.callAPIInterface(title=titleOfPaper)
+            else:
+                downloadedPaperViaTitle,downloadedFileName = False,None
+                    
+            if downloadedFileName is None:
+                downloadedFileName = ""
+            writer.writerow({'Source Link': linkToPaper, 
+            'Title': titleOfPaper,
+            'Downloaded Via Link': downloadedPaperViaLink, 
+            'Downloaded Via Title': downloadedPaperViaTitle,
+            'Download Successful' : downloadedPaperViaLink or downloadedPaperViaTitle,
+            'Downloaded File Name': downloadedFileName})
+```
+
+
+
+
 ## TODO
 * Fetcher dedup: when arxiv abs/pdf apperas both in search results, page would be downloaded twice (maybe add a cache for requests)
 * Don't trust arxiv link from google scholar
