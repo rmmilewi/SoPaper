@@ -28,10 +28,11 @@ def ensure_unicode_anytype(s):
     return s
 
 def ensure_unicode(s):
-    """assert type of s is basestring and convert s to unicode"""
+    """assert type of s is basestring and convert s to unicode
+    Note from Reed: From Python 3 onwards, all strings are in Unicode format,
+    so if we are passed a string, we know its a Unicode string.
+    """
     assert isinstance(s, str), 's should be string' + str(s)
-    if isinstance(s, str):
-        s = s.decode('utf-8')
     return s
 
 def ensure_bin_str(s):
