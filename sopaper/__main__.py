@@ -41,11 +41,15 @@ def get_args():
                         required=False, default='.')
     parser.add_argument('-o', '--output',
                         help='Manually specify a output file, rather than automatically determine the correct name.')
+    parser.add_argument('-w', '--overwrite',
+                        action='store_true',
+                        help='If a file already exists in the given output directory with the same name as a file already there,\
+                        overwrite that file (default setting: do not overwrite the file, skip storing it.)')
     ret = parser.parse_args()
     ret.title = ' '.join(ret.title)
     return ret
     
-def callAPIInterface(title,url=False,directory='.',output=None):
+def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
     """
     Reed Note: Added a simple API interface so we can import sopaper and call it from within another Python script,
     rather than using the command-line interface (which this API interface duplicates).
@@ -114,9 +118,10 @@ def callAPIInterface(title,url=False,directory='.',output=None):
 
         filename = os.path.join(directory, ctx.title + ".pdf")
         if os.path.exists(filename):
-            log_err("File \"{}\" exists! overwrite? (y/n)".format(os.path.basename(filename)))
-            resp = eval(input())
-            if resp not in ['y', 'Y']:
+            if overwrite:
+                log_err("File \"{}\" exists! Overwriting.".format(os.path.basename(filename)))
+            else:
+                log_err("File \"{}\" exists! Not overwriting.".format(os.path.basename(filename)))
                 log_info("No file written. Exiting...")
                 break
         with open(filename, 'wb') as f:
@@ -206,9 +211,10 @@ def main():
 
         filename = os.path.join(directory, ctx.title + ".pdf")
         if os.path.exists(filename):
-            log_err("File \"{}\" exists! overwrite? (y/n)".format(os.path.basename(filename)))
-            resp = eval(input())
-            if resp not in ['y', 'Y']:
+            if args.overwrite:
+                log_err("File \"{}\" exists! Overwriting.".format(os.path.basename(filename)))
+            else:
+                log_err("File \"{}\" exists! Not overwriting.".format(os.path.basename(filename)))
                 log_info("No file written. Exiting...")
                 break
         with open(filename, 'wb') as f:
