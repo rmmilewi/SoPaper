@@ -111,7 +111,7 @@ def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
         print(("Results for {}:".format(ctx.title)))
         for (_, sr) in download_candidates:
             print((sr.url))
-        return True
+        return True,None
 
     for (parser, sr) in download_candidates:
         data = parser.download(sr)
@@ -126,15 +126,14 @@ def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
             else:
                 log_err("File \"{}\" exists! Not overwriting.".format(os.path.basename(filename)))
                 log_info("No file written. Exiting...")
-                return True
+                return True,None
         with open(filename, 'wb') as f:
             f.write(data)
         if output:
             os.rename(filename, output)
-        return True
     else:
         log_err("Failed to download {0}".format(ctx.title))
-        return False
+        return False,None
     if ctx.meta.get('bibtex'):
         log_info("Bibtex:\n{}".format(ctx.meta['bibtex']))
     if ctx.meta.get('author'):
@@ -142,7 +141,7 @@ def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
     if ctx.meta.get('citecnt'):
         log_info("Cite count: {0}".format(ctx.meta['citecnt']))
     log_info("Successfully downloaded to {0}".format(filename))
-    return True    
+    return True,filename    
     
 
 def main():
