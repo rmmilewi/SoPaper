@@ -12,6 +12,7 @@ import os
 import re
 import os.path
 import argparse
+import time
 from multiprocessing import Pool
 
 # Config must be set at the beginning
@@ -48,6 +49,8 @@ def get_args():
     ret = parser.parse_args()
     ret.title = ' '.join(ret.title)
     return ret
+    
+
     
 def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
     """
@@ -102,13 +105,13 @@ def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
         ctx.title = finalize_filename(ctx.title)
     else:
         log_info("Failed to guess paper title!")
-        ctx.title = "Unnamed Paper"
+        ctx.title = "Unnamed Paper {timestamp}".format(timestamp=time.time_ns())
     if url:
         # url mode
         print(("Results for {}:".format(ctx.title)))
         for (_, sr) in download_candidates:
             print((sr.url))
-        return
+        return True
 
     for (parser, sr) in download_candidates:
         data = parser.download(sr)
@@ -123,22 +126,23 @@ def callAPIInterface(title,url=False,directory='.',output=None,overwrite=False):
             else:
                 log_err("File \"{}\" exists! Not overwriting.".format(os.path.basename(filename)))
                 log_info("No file written. Exiting...")
-                break
+                return True
         with open(filename, 'wb') as f:
             f.write(data)
         if output:
             os.rename(filename, output)
-        break
+        return True
     else:
         log_err("Failed to download {0}".format(ctx.title))
-        return
+        return False
     if ctx.meta.get('bibtex'):
         log_info("Bibtex:\n{}".format(ctx.meta['bibtex']))
     if ctx.meta.get('author'):
         log_info("Author: {0}".format(ctx.meta['author']))
     if ctx.meta.get('citecnt'):
         log_info("Cite count: {0}".format(ctx.meta['citecnt']))
-    log_info("Successfully downloaded to {0}".format(filename))    
+    log_info("Successfully downloaded to {0}".format(filename))
+    return True    
     
 
 def main():
@@ -195,7 +199,7 @@ def main():
         ctx.title = finalize_filename(ctx.title)
     else:
         log_info("Failed to guess paper title!")
-        ctx.title = "Unnamed Paper"
+        ctx.title = "Unnamed Paper {timestamp}".format(timestamp=time.time_ns())
     if args.url:
         # url mode
         print(("Results for {}:".format(ctx.title)))
