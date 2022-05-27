@@ -30,7 +30,7 @@ class Arxiv(FetcherBase):
     def _do_download(self, updater):
         full_text_div = self.soup.findAll('div', attrs={'class': 'full-text'})[0]
         link = full_text_div.findAll('li')[0]
-        partial_link = link.children.next().get('href')
+        partial_link = link.children.__next__().get('href')
 
         prefix = 'http://arxiv.org'
         if 'cn.arxiv.org' in self.url:  # handle cn.arxiv
